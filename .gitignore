@@ -9,3 +9,5 @@
 cleaned_phone_data_excl_extracts_clean.csv
 VaderSentencesScores.pkl
 TextBlobSentencesScores.pkl
+df_normalised_scores.csv
+sentences_df.pkl
