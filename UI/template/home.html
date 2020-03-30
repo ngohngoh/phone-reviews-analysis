@@ -1,0 +1,44 @@
+{% extends "main.html" %}
+
+{% block content %}
+
+<div class='row'>
+    <div class='col-2'>
+    </div>
+
+    <div class='col-8'>
+        <div class='jumbotron'>
+            <h2>Mobile Phone Reviews 2013-2017</h2>
+        </div>
+
+        <div class='container'>
+            
+            <h4>Select category</h4>
+            <form action="/search" method="POST">
+                <select name='category'>
+                    {% for category in categories %}
+                    <option value='{{category}}'>{{category}}</option>
+                    {% endfor %}
+                </select>
+            </form>
+            
+
+        </div>
+
+    </div>
+
+
+    
+</div>
+    
+
+
+
+
+
+
+
+
+
+
+{% endblock %}
