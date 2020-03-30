@@ -11,3 +11,7 @@ VaderSentencesScores.pkl
 TextBlobSentencesScores.pkl
 df_normalised_scores.csv
 sentences_df.pkl
+sa_sample.csv
+cleaned_reviews_df.pkl
+df_normalised_scores.pkl
+vader_sentencesScores_sample.csv
