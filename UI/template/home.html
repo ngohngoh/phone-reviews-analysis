@@ -7,32 +7,245 @@
     </div>
 
     <div class='col-8'>
-        <div class='jumbotron'>
-            <h2>Mobile Phone Reviews 2013-2017</h2>
+        <div class='jumbotron d-flex justify-content-center'>
+            <h1>Mobile Phone Reviews 2013-2017</h1>
         </div>
-
-        <div class='container'>
-            
-            <h4>Select category</h4>
-            <form action="/search" method="POST">
-                <select name='category'>
-                    {% for category in categories %}
-                    <option value='{{category}}'>{{category}}</option>
-                    {% endfor %}
-                </select>
-            </form>
-            
+        
+        <div class="row justify-content-center">
+            <button class="tablink" onclick="openTab('Category', this)" id="defaultOpen">Category</button>
+            <button class="tablink" onclick="openTab('Phone Model', this)">Phone Model</button>
 
         </div>
+        
+        <div class="tabcontent" id="Category">    
 
-    </div>
+                <div class='container pt-4 d-flex justify-content-center'>
+                    
+                    <h2>Select category:</h2> &nbsp; &nbsp;
+                        <select id='category_form' name='category'>
+                            {% for category in categories %}
+                            <option value='{{category}}'>{{category}}</option>
+                            {% endfor %}
+                        </select> &nbsp;
+                        <button type="button" onclick="form_submit()">Submit</button>
+                </div>
+        
+                <hr>
+        
+                <div class="container">
+                    <p>
+                        <h2 id='search_results' class='d-flex justify-content-center'></h2>
+            
+                    </p>
+                    
+                </div>
+                <div id="pos_results" class="container">
+                    <h4 id='pos_title'></h4>
+                    <table id='pos_table' class='table table-bordered'>
+        
+                    </table>
+        
+                </div>
+        
+                <div id="neg_results" class="container">
+                    <h4 id='neg_title'></h4>
+                    <table id='neg_table' class='table table-bordered'>
+                        
+                    </table>
+                    
+                </div>
+        
+            </div>
+
+            
+
+            <div id="Phone Model" class="tabcontent">
+                <div class='container pt-4 d-flex justify-content-center'>
+                    
+                    <h2>Select phone model:</h2> &nbsp; &nbsp;
+                        <select id='model_form'>
+                            {% for model in all_phones %}
+                            <option value='{{model}}'>{{model}}</option>
+                            {% endfor %}
+                        </select> &nbsp;
+                        <button type="button" onclick="form_submit2()">Submit</button>
+                </div>
+
+                <hr>
+
+                <div class="container">
+                    <p>
+                        <h2 id='phone_results' class='d-flex justify-content-center'></h2>
+                    </p>
+                </div>
+                <div class="container">
+                    <h4 id='phone_title'></h4>
+                    <table id='phone_table' class='table table-bordered'>
+
+                    </table>
+                </div>
+            </div>
+        </div>
 
 
     
 </div>
     
+<script>
+    function form_submit2() {
+        var user_select = document.getElementById('model_form').value;
+        console.log(user_select);
+        var formData = new FormData();
+        formData.append('model', user_select)
+        console.log(formData);
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+            if(this.readyState == 4 && this.status == 200) {
+                var result = JSON.parse(this.responseText);
+                console.log(typeof(result));
+
+                function constructTable2(result, tag) {
+
+                    var table_base = document.getElementById(tag);
+
+                    while (table_base.firstChild) {
+                        table_base.removeChild(table_base.firstChild);  
+                    }
+
+                    var t_header = document.createElement('th');
+                    t_header.appendChild(document.createTextNode('Category'));
+                    table_base.appendChild(t_header);
+
+                    t_header = document.createElement('th');
+                    t_header.appendChild(document.createTextNode('Average Sentiment Scores'));
+                    table_base.appendChild(t_header);
+
+                    t_header = document.createElement('th');
+                    t_header.appendChild(document.createTextNode('Total No. of Reviews'));
+                    table_base.appendChild(t_header);
+
+                    for (const [key, value] of Object.entries(result)) {
+                        if (value[0] == 'No Reviews') {
+                            var attri_class = "active";
+                        }
+                        else if (value[0] >= 0.666) {
+                            var attri_class = "success";
+                        }
+                        else if (value[0] <= 0.333) {
+                            var attri_class = "danger";
+                        }
+                        else {
+                            var attri_class = "";
+                        }
+                        var new_row = document.createElement('tr');
+                        new_row.setAttribute("class", attri_class);
+                        var new_data = document.createElement('td');
+                        new_data.appendChild(document.createTextNode(key));
+                        new_row.appendChild(new_data);
+                        new_data = document.createElement('td');
+                        new_data.appendChild(document.createTextNode(value[0]));
+                        new_row.appendChild(new_data);
+                        new_data = document.createElement('td');
+                        new_data.appendChild(document.createTextNode(value[1]));
+                        new_row.appendChild(new_data);
+                        table_base.appendChild(new_row);
+                    }                
+                }
+
+                document.getElementById('phone_results').innerHTML = 'Search Results';
+
+                document.getElementById('phone_title').innerHTML = user_select + " Overall Reviews";
+                constructTable2(result, 'phone_table');
 
 
+                
+            }
+        }
+        xhr.open("POST", '/', true);
+        xhr.send(formData);
+    };
+
+    function form_submit() {
+        var user_select = document.getElementById('category_form').value;
+        console.log(user_select);
+        var formData = new FormData();
+        formData.append('category', user_select)
+        console.log(formData);
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+            if(this.readyState == 4 && this.status == 200) {
+                var result = JSON.parse(this.responseText);
+                console.log(typeof(result));
+                pos_result = JSON.parse(result['pos']);
+                console.log(typeof(pos_result));
+                neg_result = JSON.parse(result['neg']);
+
+                // CREATING TABLE 
+                function constructTable(result, tag) {
+
+                    var table_base = document.getElementById(tag);
+
+                    while (table_base.firstChild) {
+                        table_base.removeChild(table_base.firstChild);  
+                    }
+                    
+                    var t_header = document.createElement('th');
+                    t_header.appendChild(document.createTextNode('Phone Model'));
+                    table_base.appendChild(t_header);
+
+                    t_header = document.createElement('th');
+                    t_header.appendChild(document.createTextNode('User Reviews'));
+                    table_base.appendChild(t_header);
+
+                    t_header = document.createElement('th');
+                    t_header.appendChild(document.createTextNode('Sentiment Scores'));
+                    table_base.appendChild(t_header);
+
+                    for(i = 0;i < result.length; i++){
+                        var new_row = document.createElement('tr');
+                        var new_data = document.createElement('td');
+                        new_data.appendChild(document.createTextNode(result[i].phone_model));
+                        new_row.appendChild(new_data);
+                        var new_data = document.createElement('td');
+                        new_data.appendChild(document.createTextNode(result[i].sentence));
+                        new_row.appendChild(new_data);
+                        new_data = document.createElement('td');
+                        new_data.appendChild(document.createTextNode(result[i].compound))
+                        new_row.appendChild(new_data);
+                        table_base.appendChild(new_row);
+                    }                    
+                }
+
+                document.getElementById('search_results').innerHTML = 'Search Results';
+                
+                document.getElementById('pos_title').innerHTML = 'Positive Reviews';
+                constructTable(pos_result, 'pos_table');
+
+                document.getElementById('neg_title').innerHTML = 'Negative Reviews';
+                constructTable(neg_result, 'neg_table');
+            }
+        }
+        xhr.open("POST", '/', true);
+        xhr.send(formData);
+    }
+
+    function openTab(tab_name,elmnt) {
+
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tablink");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].style.backgroundColor = "";
+        }
+        document.getElementById(tab_name).style.display = "block";
+    }
+    // Get the element with id="defaultOpen" and click on it
+    document.getElementById("defaultOpen").click();
+
+</script>
 
 
 
